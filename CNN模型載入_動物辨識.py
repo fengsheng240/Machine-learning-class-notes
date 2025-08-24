@@ -44,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = CNN(num_classes=len(np.unique(y_test))).to(device)
 
 # 載入模型----------------------------------------------------------------------------
-model = torch.load("best_model_1.pt", map_location=device)
+model = torch.load("best_model_1/best_model_1.pt", map_location=device)
 # ------------------------------------------------------------------------------------
 
 model.eval()
