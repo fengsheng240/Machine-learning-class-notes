@@ -18,17 +18,87 @@
 
 <br>
 
-### 1.1. 資料前處理與資料增強
-使用的動物資料集包含了15396筆資料 (本專案無法提供此動物資料集)。<br><br><br>
-### 1.2. 模型設計與訓練過程
+### 1. 資料前處理與資料增強
+使用的動物資料集包含了15396筆資料 (本專案無法提供此動物資料集)。
+
+**1.1. 資料前處理**
+
+**1.2. 資料增強**
+
+<br><br>
+
+### 2. 模型結構設計
+訓練集圖像輸入尺寸**：本模型輸入影像為 **224×224×3**（RGB）。若資料集原始尺寸不同，請先 `Resize((224, 224))`。
+
+### 2.1. 特徵提取（Features）
+| 區塊 | 層 | 輸出張量 |
+|:---|:---|:---|
+| Features-1 | Conv2d(3→32, k=3, p=1) → BN → ReLU → MaxPool2d(2) | 32×112×112 |
+| Features-2 | Conv2d(32→64, 3, p=1) → BN → ReLU → MaxPool2d(2) | 64×56×56 |
+| Features-3 | Conv2d(64→128, 3, p=1) → BN → ReLU → MaxPool2d(2) | 128×28×28 |
+| Features-4 | Conv2d(128→256, 3, p=1) → BN → ReLU → MaxPool2d(2) | 256×14×14 |
+| Features-5 | Conv2d(256→512, 3, p=1) → BN → ReLU → MaxPool2d(2) | 512×7×7 |
+
+### 2.2. 分類（Classifier）
+| 區塊 | 層 | 輸出張量 |
+|:---|:---|:---|
+| Classifier-1 | Flatten → Linear(512×7×7 → 1024) → BN → ReLU → Dropout(0.5) | 1024 |
+| Classifier-2 | Linear(1024 → 512) → BN → ReLU → Dropout(0.4) | 512 |
+| Classifier-3 | Linear(512 → 256) → BN → ReLU → Dropout(0.4) | 256 |
+| Classifier-4 | Linear(256 → 128) → BN → ReLU → Dropout(0.3) | 128 |
+
+### 2.3. 輸出（Output）
+| 區塊 | 層 | 輸出張量 |
+|:---|:---|:---|
+| Output | Linear(128 → num_classes) | num_classes |
+
+<br><br>
+
+### 3. 訓練前超參數設置 (Pre-training Hyperparameters)
+
+<br>
+
+**3.1. 資料與訓練設定**
+| 參數 | 值 |
+|:---|:---|
+| 批次大小 (Batch size) | 32 |
+| 訓練週期 (Epochs) | 20 |
+
+<br>
+
+**3.2. 基本優化設定**
+| 類別 | 參數 | 值 |
+|:---|:---|:---|
+| 損失函數 (Loss) | CrossEntropyLoss |  |
+| 最佳化器 (Optimizer) | Adam | lr=0.0005 |
+
+<br>
+
+**3.3. 學習率調整策略 (Scheduler): 使用StepLR，每隔 `step_size` epoch 調整一次**
+| 參數 | 值 | 說明 |
+|:---|:---|:---|
+| step_size | 5 | 每 5 個 epoch 調整 |
+| gamma | 0.5 | 學習率乘 0.5 |
+
+<br>
+
+**3.4. 早停機制 (Early Stopping)**
+| 參數 | 值 | 說明 |
+|:---|:---|:---|
+| patience | 5 | 若連續 5 個 epoch 驗證集準確率無提升則停止訓練 |
+
+<br><br>
+
+### 4.訓練過程
 CNN模型的結構設計。<br>
 CNN模型訓練過程中，各個回合的表現。
 <p align="center">
   <img src="實作過程圖片/螢幕擷取畫面 2025-08-25 005335.png" width="45%" >
 </p>
-<br><br><br>
 
-### 1.3. 結果可視化
+<br><br>
+
+### 5. 結果可視化
 在驗證集中隨機抽出16張動物圖片進行預測，動物辨識的結果良好。
 <p align="center">
   <img src="實作過程圖片/螢幕擷取畫面 2025-08-25 005407.png" width="45%">
